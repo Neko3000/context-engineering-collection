@@ -15,11 +15,12 @@ Every new file MUST begin with this header. Replace placeholders with real value
 //  {FILENAME}
 //  Musically
 //
-//  Created by Xueliang Chen on {DD/MM/YYYY}.
+//  Created by {USERNAME} on {DD/MM/YYYY}.
 //  Copyright © {YYYY} Bytedance. All rights reserved.
 ```
 
 - `{FILENAME}` — the actual file name including extension (e.g. `MyView.swift`, `MyManager.h`)
+- `{USERNAME}` — resolve by running: first `git config user.name` (project-level), if empty then `git config --global user.name` (global). Use the first non-empty result.
 - `{DD/MM/YYYY}` — today's date in day/month/year format
 - `{YYYY}` — the current four-digit year
 
@@ -50,10 +51,50 @@ Every new file MUST begin with this header. Replace placeholders with real value
 
 ## Swift Class / Struct Structure
 
-Use `// MARK: -` to organize sections in this exact order. Include an empty `//` line after each MARK header. Omit sections that are genuinely empty for the given type (e.g. a data model may skip Views).
+Use `// MARK: -` to organize sections in this exact order. Include an empty `//` line after each MARK header. Determine the superclass first, then apply the matching template.
+
+### Normal Class (NSObject or no superclass)
+
+No `_setupViews`. Initializer uses `override init()`.
 
 ```swift
-class MyClass {
+class MyManager: NSObject {
+    // MARK: - Constants
+    //
+
+    // MARK: - Props
+    //
+
+    // MARK: - Life Cycle
+    //
+    @objc public override init() {
+        super.init()
+        self._setup()
+    }
+
+    // MARK: - Public
+    //
+
+    // MARK: - Private
+    //
+    private func _setup() {
+        //
+    }
+
+    // MARK: - Protocol {ProtocolName}
+    //
+
+    // MARK: - Override
+    //
+}
+```
+
+### UIView Subclass
+
+Has `_setupViews`. Initializer uses `override init(frame: CGRect)`.
+
+```swift
+class MyView: UIView {
     // MARK: - Constants
     //
 
@@ -65,14 +106,9 @@ class MyClass {
 
     // MARK: - Life Cycle
     //
-    @objc public init() {
-        super.init(frame: CGRectZero)
-        self.p_setup()
-    }
-
     @objc public override init(frame: CGRect) {
         super.init(frame: frame)
-        self.p_setup()
+        self._setup()
     }
 
     required init?(coder: NSCoder) {
@@ -100,23 +136,62 @@ class MyClass {
 }
 ```
 
+### UIViewController Subclass
+
+Has `_setupViews`. Setup called from `viewDidLoad`.
+
+```swift
+class MyViewController: UIViewController {
+    // MARK: - Constants
+    //
+
+    // MARK: - Props
+    //
+
+    // MARK: - Views
+    //
+
+    // MARK: - Life Cycle
+    //
+    override func viewDidLoad() {
+        super.viewDidLoad()
+        self._setup()
+    }
+
+    // MARK: - Public
+    //
+
+    // MARK: - Private
+    //
+    private func _setup() {
+        self._setupViews()
+    }
+
+    private func _setupViews() {
+        //
+    }
+
+    // MARK: - Protocol {ProtocolName}
+    //
+
+    // MARK: - Override
+    //
+}
+```
+
 ## Objective-C Class Structure
 
-Use `#pragma mark -` to organize sections in the same order:
+Use `#pragma mark -` to organize sections. Determine the superclass first, then apply the matching template.
 
-**Header file (.h):**
+### Normal Class (NSObject)
+
+**Header (.h):**
 ```objc
-//  MyClass.h
-//  Musically
-//
-//  Created by Xueliang Chen on 09/02/2026.
-//  Copyright © 2026 Bytedance. All rights reserved.
-
-#import <UIKit/UIKit.h>
+#import <Foundation/Foundation.h>
 
 NS_ASSUME_NONNULL_BEGIN
 
-@interface MyClass : NSObject
+@interface MyManager : NSObject
 
 #pragma mark - Public
 
@@ -125,30 +200,24 @@ NS_ASSUME_NONNULL_BEGIN
 NS_ASSUME_NONNULL_END
 ```
 
-**Implementation file (.m):**
+**Implementation (.m):**
 ```objc
-//  MyClass.m
-//  Musically
-//
-//  Created by Xueliang Chen on 09/02/2026.
-//  Copyright © 2026 Bytedance. All rights reserved.
+#import "MyManager.h"
 
-#import "MyClass.h"
-
-@interface MyClass ()
+@interface MyManager ()
 
 #pragma mark - Props
 
 @end
 
-@implementation MyClass
+@implementation MyManager
 
 #pragma mark - Life Cycle
 
 - (instancetype)init {
     self = [super init];
     if (self) {
-        [self p_setup];
+        [self _setup];
     }
     return self;
 }
@@ -157,11 +226,7 @@ NS_ASSUME_NONNULL_END
 
 #pragma mark - Private
 
-- (void)p_setup {
-    [self p_setupViews];
-}
-
-- (void)p_setupViews {
+- (void)_setup {
     //
 }
 
@@ -172,7 +237,130 @@ NS_ASSUME_NONNULL_END
 @end
 ```
 
-## Quick Reference: Section Order
+### UIView Subclass
+
+**Header (.h):**
+```objc
+#import <UIKit/UIKit.h>
+
+NS_ASSUME_NONNULL_BEGIN
+
+@interface MyView : UIView
+
+#pragma mark - Public
+
+@end
+
+NS_ASSUME_NONNULL_END
+```
+
+**Implementation (.m):**
+```objc
+#import "MyView.h"
+
+@interface MyView ()
+
+#pragma mark - Props
+
+@end
+
+@implementation MyView
+
+#pragma mark - Life Cycle
+
+- (instancetype)initWithFrame:(CGRect)frame {
+    self = [super initWithFrame:frame];
+    if (self) {
+        [self _setup];
+    }
+    return self;
+}
+
+#pragma mark - Public
+
+#pragma mark - Private
+
+- (void)_setup {
+    [self _setupViews];
+}
+
+- (void)_setupViews {
+    //
+}
+
+#pragma mark - Protocol {ProtocolName}
+
+#pragma mark - Override
+
+@end
+```
+
+### UIViewController Subclass
+
+**Header (.h):**
+```objc
+#import <UIKit/UIKit.h>
+
+NS_ASSUME_NONNULL_BEGIN
+
+@interface MyViewController : UIViewController
+
+#pragma mark - Public
+
+@end
+
+NS_ASSUME_NONNULL_END
+```
+
+**Implementation (.m):**
+```objc
+#import "MyViewController.h"
+
+@interface MyViewController ()
+
+#pragma mark - Props
+
+@end
+
+@implementation MyViewController
+
+#pragma mark - Life Cycle
+
+- (void)viewDidLoad {
+    [super viewDidLoad];
+    [self _setup];
+}
+
+#pragma mark - Public
+
+#pragma mark - Private
+
+- (void)_setup {
+    [self _setupViews];
+}
+
+- (void)_setupViews {
+    //
+}
+
+#pragma mark - Protocol {ProtocolName}
+
+#pragma mark - Override
+
+@end
+```
+
+## Quick Reference
+
+### Class Type Decision
+
+| Superclass | Initializer | Has `_setupViews`? | Has Views section? |
+|------------|-------------|--------------------|--------------------|
+| NSObject / none | `override init()` | No | No |
+| UIView | `override init(frame:)` | Yes | Yes |
+| UIViewController | `viewDidLoad()` | Yes | Yes |
+
+### Section Order
 
 | # | Section | Swift | Objective-C |
 |---|---------|-------|-------------|
